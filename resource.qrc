@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/images/addFile.png</file>
+        <file>resources/images/Cancel_32x32.png</file>
+        <file>resources/images/check.png</file>
+        <file>resources/images/CheckBox_32x32.png</file>
+        <file>resources/images/delete.png</file>
+        <file>resources/images/file.png</file>
+        <file>resources/images/folder.png</file>
+        <file>resources/images/logo.ico</file>
+        <file>resources/images/search.png</file>
+        <file>resources/images/share.png</file>
+        <file>resources/images/transmit.ico</file>
+        <file>resources/face/btn_avatar_a75.png</file>
+        <file>resources/tb/tb.jpg</file>
+    </qresource>
+</RCC>

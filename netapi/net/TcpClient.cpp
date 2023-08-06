@@ -1,5 +1,5 @@
 #include "TcpClient.h"
-
+#include <QDebug>
 
 #include"INetMediator.h"
 
@@ -40,23 +40,19 @@ bool TcpClient::InitNet(const char *szBufIP, unsigned short port)
         }
         m_isLoadlib = true;
     }
-
     m_isConnected = false;
-
 	//2.雇人-- 创建套接字 进程与外界网络通信需要的接口 决定了与外界通讯的方式(tcp udp)
 	m_sock = socket( AF_INET , SOCK_STREAM , IPPROTO_TCP ); // ipv4 udp
 	if ( m_sock == INVALID_SOCKET) {
 		WSACleanup();
         return false;
 	}
-
 	//3. 连接服务器
 	sockaddr_in addr;
 	addr.sin_family = AF_INET ;
     addr.sin_addr.S_un.S_addr = inet_addr( szBufIP );  /*inet_addr("192.168.31.115")*/ ;  //绑定任意网卡
     addr.sin_port = htons( port );  //htons 转换为网络字节序 大端存储  43232
-
-	
+    qDebug()<<szBufIP<<port;
 	if( connect( m_sock ,(const sockaddr* ) &addr , sizeof(addr) ) == SOCKET_ERROR )
 	{
 		UnInitNet();

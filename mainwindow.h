@@ -20,6 +20,15 @@ private:
 signals:
     void sig_close();//关闭信号
 private slots:
+    void on_pb_file_page_clicked();
+
+    void on_pb_trans_page_clicked();
+
+    void on_pb_share_page_clicked();
+public slots:
+    //设置界面
+    void slot_setInfo(QString name);
+
 public:
     //关闭事件
     void closeEvent(QCloseEvent* event);

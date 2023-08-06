@@ -6,6 +6,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    this->setWindowTitle("MyDisk");
+    this->setWindowFlags(Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint );
 }
 
 MainWindow::~MainWindow()
@@ -28,3 +30,26 @@ void MainWindow::closeEvent(QCloseEvent* event)
     }
 
 }
+
+void MainWindow::on_pb_file_page_clicked()
+{
+    ui->sw_right->setCurrentIndex(0);
+}
+
+
+void MainWindow::on_pb_trans_page_clicked()
+{
+    ui->sw_right->setCurrentIndex(1);
+}
+
+
+void MainWindow::on_pb_share_page_clicked()
+{
+    ui->sw_right->setCurrentIndex(2);
+}
+
+void MainWindow::slot_setInfo(QString name)
+{
+    ui->pb_user->setText(name);
+}
+

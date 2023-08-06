@@ -27,6 +27,16 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
@@ -64,6 +74,9 @@
     <ClCompile Include="ckernel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="logindialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -99,6 +112,9 @@
     <QtMoc Include="ckernel.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="logindialog.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
     <QtMoc Include="mainwindow.h">
       <Filter>Header Files</Filter>
     </QtMoc>
@@ -113,6 +129,8 @@
     
     
     
+    
+    
     <CustomBuild Include="debug\moc_predefs.h.cbt">
       <Filter>Generated Files</Filter>
     </CustomBuild>
@@ -120,10 +138,63 @@
       <Filter>Generated Files</Filter>
     </CustomBuild>
     
+    
+    
+    
   </ItemGroup>
   <ItemGroup>
+    <QtUic Include="logindialog.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
     <QtUic Include="mainwindow.ui">
       <Filter>Form Files</Filter>
     </QtUic>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\images\Cancel_32x32.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resources\images\CheckBox_32x32.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resources\images\addFile.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resources\face\btn_avatar_a75.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resources\images\check.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resources\images\delete.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resources\images\file.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resources\images\folder.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resources\images\logo.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <QtRcc Include="resource.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
+    <None Include="resources\images\search.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resources\images\share.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resources\tb\tb.jpg">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resources\images\transmit.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="C:\Users\Administrator\Documents\MyDisk\MyDisk_resource.rc" />
   </ItemGroup>
 </Project>
