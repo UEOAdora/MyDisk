@@ -251,7 +251,20 @@ public:
         verticalLayout_2->addWidget(wdg_fileTools);
 
         table_file = new QTableWidget(page_file);
+        if (table_file->columnCount() < 3)
+            table_file->setColumnCount(3);
+        QTableWidgetItem *__qtablewidgetitem = new QTableWidgetItem();
+        table_file->setHorizontalHeaderItem(0, __qtablewidgetitem);
+        QTableWidgetItem *__qtablewidgetitem1 = new QTableWidgetItem();
+        table_file->setHorizontalHeaderItem(1, __qtablewidgetitem1);
+        QTableWidgetItem *__qtablewidgetitem2 = new QTableWidgetItem();
+        table_file->setHorizontalHeaderItem(2, __qtablewidgetitem2);
         table_file->setObjectName(QString::fromUtf8("table_file"));
+        table_file->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        table_file->setSelectionBehavior(QAbstractItemView::SelectRows);
+        table_file->horizontalHeader()->setDefaultSectionSize(300);
+        table_file->horizontalHeader()->setStretchLastSection(true);
+        table_file->verticalHeader()->setVisible(false);
 
         verticalLayout_2->addWidget(table_file);
 
@@ -359,6 +372,12 @@ public:
         pb_addFile->setText(QString());
         pb_delete->setText(QString());
         pb_share->setText(QString());
+        QTableWidgetItem *___qtablewidgetitem = table_file->horizontalHeaderItem(0);
+        ___qtablewidgetitem->setText(QApplication::translate("MainWindow", "\346\226\207\344\273\266\345\220\215", nullptr));
+        QTableWidgetItem *___qtablewidgetitem1 = table_file->horizontalHeaderItem(1);
+        ___qtablewidgetitem1->setText(QApplication::translate("MainWindow", "\346\226\260\345\273\272\345\210\227", nullptr));
+        QTableWidgetItem *___qtablewidgetitem2 = table_file->horizontalHeaderItem(2);
+        ___qtablewidgetitem2->setText(QApplication::translate("MainWindow", "\345\244\247\345\260\217", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(tab_upload), QApplication::translate("MainWindow", "\344\270\212\344\274\240", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(tab_download), QApplication::translate("MainWindow", "\344\270\213\350\275\275", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(tab_complete), QApplication::translate("MainWindow", "\345\267\262\345\256\214\346\210\220", nullptr));
