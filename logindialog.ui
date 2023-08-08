@@ -98,7 +98,7 @@
       </rect>
      </property>
      <property name="text">
-      <string/>
+      <string>13351075356</string>
      </property>
      <property name="clearButtonEnabled">
       <bool>true</bool>
@@ -125,6 +125,9 @@
        <width>191</width>
        <height>31</height>
       </rect>
+     </property>
+     <property name="text">
+      <string>1234</string>
      </property>
      <property name="echoMode">
       <enum>QLineEdit::Password</enum>

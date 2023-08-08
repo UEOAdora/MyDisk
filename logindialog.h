@@ -30,7 +30,7 @@ private slots:
 
 private:
     Ui::LoginDialog *ui;
-    //¹Ø±ÕÊÂ¼þ
+    //å…³é—­äº‹ä»¶
     void closeEvent(QCloseEvent *event);
 };
 

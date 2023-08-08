@@ -2,11 +2,13 @@
 #define CKERNEL_H
 
 #pragma execution_character_set("utf-8")
-#include <QObject>
 #include "mainwindow.h"
 #include "packdef.h"
 #include "logindialog.h"
+#include "md5.h"
 #include <QDebug>
+#include <stdio.h>
+using namespace std;
 //单例模式 拷贝构造和析构函数私有化 提供静态函数获取单例
 
 class INetMediator;//类声明即可
@@ -33,6 +35,10 @@ private:
     //INetMediator * m_tcpServer;
     //函数指针数组
     PFUN m_netPackMap[_DEF_PROTOCOL_COUNT];
+public:
+    map<int, FileInfo> m_mapFileidToFileInfo;//文件id和文件信息的映射表
+
+    QString m_sysPath;
 
     //发送函数
     void SendData(char* buf, int nlen);
@@ -40,6 +46,8 @@ private:
     //名字 id
     QString m_name;
     int m_id;
+
+    QString m_curDir;//当前目录
 
 public:
     static Ckernel* getInstance() {//静态函数获取单例
@@ -63,6 +71,13 @@ private slots:
     void slot_dealLoginRs(unsigned int lSendIP, char* buf, int nlen);
     //处理注册回复
     void slot_dealRegisterRs(unsigned int lSendIP, char* buf, int nlen);
+    //处理文件信息
+    void slot_dealFileInfo(unsigned int lSendIP, char* buf, int nlen);
+    void slot_downloadFile(int fileid);
+    //处理文件头请求
+    void slot_dealFileHeadRq(unsigned int lSendIP, char* buf, int nlen);
+    //处理文件内容请求
+    void slot_dealFileContentRq(unsigned int lSendIP, char* buf, int nlen);
 };
 
 #endif // CKERNEL_H

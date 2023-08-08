@@ -16,6 +16,7 @@ SOURCES += \
 
 HEADERS += \
     ckernel.h \
+    common.h \
     logindialog.h \
     mainwindow.h
 
@@ -24,6 +25,8 @@ FORMS += \
     mainwindow.ui
 include(./netapi/netapi.pri)
 INCLUDEPATH += ./netapi/
+include(./md5/md5.pri)
+INCLUDEPATH += ./md5/
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
