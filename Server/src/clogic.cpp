@@ -178,7 +178,7 @@ void CLogic::UserFileListRq(sock_fd clientfd ,char* szbuf,int nlen)
     }
 }
 void CLogic::DownloadFileRq(sock_fd clientfd, char*szbuf, int nlen){
-    printf("clientfd:%d UserFileListRq\n", clientfd);
+    printf("clientfd:%d DownloadFileRq\n", clientfd);
     //拆包
     STRU_DOWNLOAD_RQ *rq = (STRU_DOWNLOAD_RQ*)szbuf;
     //数据库查询
@@ -205,30 +205,36 @@ void CLogic::DownloadFileRq(sock_fd clientfd, char*szbuf, int nlen){
     lstRes.pop_front();
     info->absolutePath = lstRes.front();
     lstRes.pop_front();
-    info->filefd = open(info->absolutePath.c_str(),O_RDONLY);
-    if(info->filefd <= 0){
-        printf("open file error:%d\n",errno);
-        return ;
-    }
-    char idbuf[100] = "";
-    sprintf(idbuf, "%10d%10d",rq->userid,rq->fileid);
-    string strid = idbuf;
-    m_mapFileidToFileInfo.insert(strid,info);
-    //返回文件头请求
-    STRU_FILE_HEAD_RQ headrq;
-    strcpy(headrq.dir,info->dir.c_str());
-    headrq.fileid = info->fileid;
-    strcpy(headrq.fileName,info->name.c_str());
-    strcpy(headrq.fileType,info->type.c_str());
-    strcpy(headrq.md5,info->md5.c_str());
-    headrq.size = info->size;
 
-    SendData(clientfd,(char*)&headrq,sizeof(headrq));
+    if(info->type == "file"){
+        info->filefd = open(info->absolutePath.c_str(),O_RDONLY);
+        if(info->filefd <= 0){
+            printf("open file error:%d\n",errno);
+            return ;
+        }
+        char idbuf[100] = "";
+        sprintf(idbuf, "%10d%10d",rq->userid,rq->fileid);
+        string strid = idbuf;
+        m_mapFileidToFileInfo.insert(strid,info);
+        //返回文件头请求
+        STRU_FILE_HEAD_RQ headrq;
+        strcpy(headrq.dir,info->dir.c_str());
+        headrq.fileid = info->fileid;
+        strcpy(headrq.fileName,info->name.c_str());
+        strcpy(headrq.fileType,info->type.c_str());
+        strcpy(headrq.md5,info->md5.c_str());
+        headrq.size = info->size;
+
+        SendData(clientfd,(char*)&headrq,sizeof(headrq));
+    } else{  //文件夹
+
+    }
+
 
 }
 
 void CLogic::FileHeadRs(sock_fd clientfd, char*szbuf, int nlen){
-    printf("clientfd:%d UserFileListRq\n", clientfd);
+    printf("clientfd:%d FileHeadRs\n", clientfd);
     //拆包
     STRU_FILE_HEAD_RS *rs = (STRU_FILE_HEAD_RS*)szbuf;
     //取出信息
@@ -254,7 +260,7 @@ void CLogic::FileHeadRs(sock_fd clientfd, char*szbuf, int nlen){
 }
 
 void CLogic::FileContentRs(sock_fd clientfd, char*szbuf, int nlen){
-    printf("clientfd:%d UserFileListRq\n", clientfd);
+    printf("clientfd:%d FileContentRs\n", clientfd);
     //拆包
     STRU_FILE_CONTENT_RS *rs = (STRU_FILE_CONTENT_RS*)szbuf;
     //取出信息
@@ -269,23 +275,24 @@ void CLogic::FileContentRs(sock_fd clientfd, char*szbuf, int nlen){
         return ;
     }
     //如果不成功 文件流跳回到之前的位置 重新读
-
-    //成功
-    info->pos += rs->len;
-
-    //可能文件读取结束
-    if(info->pos >= info->size){
-        //关闭文件
-        close(info->filefd);
-        //删除映射关系
-        m_mapFileidToFileInfo.erase(idbuf);
-    } else {
-        //继续读取
-        STRU_FILE_CONTENT_RQ rq;
-        rq.fileid = rs->fileid;
-        rq.userid = rs->userid;
-        rq.len = read(info->filefd,rq.content,_DEF_BUFFER);
-        //发送文件内容请求
-        SendData(clientfd,(char*)&rq,sizeof(rq));
+    if(rs->result == 0){
+        lseek(info->filefd,-1*rs->len,SEEK_CUR);
+    } else{
+        //成功
+        info->pos += rs->len;
+            //可能文件读取结束
+        if(info->pos >= info->size){
+            //关闭文件
+            close(info->filefd);
+            //删除映射关系
+            m_mapFileidToFileInfo.erase(idbuf);
+        } 
     }
+    //继续读取
+    STRU_FILE_CONTENT_RQ rq;
+    rq.fileid = rs->fileid;
+    rq.userid = rs->userid;
+    rq.len = read(info->filefd,rq.content,_DEF_BUFFER);
+    //发送文件内容请求
+    SendData(clientfd,(char*)&rq,sizeof(rq));
 }
