@@ -136,6 +136,172 @@ typedef struct STRU_LOGIN_RS
 	char name[_MAX_SIZE];
 }STRU_LOGIN_RS;
 
+struct UserInfo
+{
+	int clientfd;
+	int userid;
+	std::string name;
+};
+
+#define _MAX_PATH_SIZE (260)
+//用户文件列表请求
+#define _DEF_PACK_FILE_LIST_RQ	(_DEF_PROTOCOL_BASE + 4 )
+//文件信息
+#define _DEF_PACK_FILE_INFO	(_DEF_PROTOCOL_BASE + 5 )
+//用户文件列表请求
+struct STRU_FILE_LIST_RQ
+{
+	STRU_FILE_LIST_RQ():type(_DEF_PACK_FILE_LIST_RQ)
+	,userid(0){
+		memset( dir , 0 , sizeof(dir) );
+	}
+	PackType type;
+	int userid;
+	char dir[_MAX_PATH_SIZE];
+};
+
+//文件信息
+struct STRU_FILE_INFO
+{
+	STRU_FILE_INFO() :type(_DEF_PACK_FILE_INFO)
+		, userid(0)
+		, fileid(0)
+		, size(0)
+	{
+		memset( filename , 0 , sizeof(filename) );
+		memset( uploadTime , 0 , sizeof(uploadTime) );
+		memset( dir , 0 , sizeof(dir) );
+		memset( md5 , 0 , sizeof(md5) );
+		memset(fileType, 0 , sizeof(fileType) );
+	}
+	PackType type;
+	int userid;
+	int fileid;
+
+	char filename[_MAX_PATH_SIZE];
+	char uploadTime[_MAX_SIZE];//"2023-01-01 10:13:23"
+	int size;//不上传2GB以上的文件
+	//2 147 483 647 2GB
+	char dir[_MAX_PATH_SIZE];
+	char md5[_MAX_SIZE];
+	char fileType[_MAX_SIZE];//"file" "dir"
+};
+//文件下载
+//文件下载请求
+#define _DEF_PACK_FILE_DOWNLOAD_RQ      (_DEF_PROTOCOL_BASE + 6 )
+//文件下载回复
+#define _DEF_PACK_FILE_DOWNLOAD_RS      (_DEF_PROTOCOL_BASE + 7 )
+//文件头请求
+#define _DEF_PACK_FILE_HEAD_RQ          (_DEF_PROTOCOL_BASE + 8 )
+//文件头回复
+#define _DEF_PACK_FILE_HEAD_RS          (_DEF_PROTOCOL_BASE + 9 )
+//文件内容请求
+#define _DEF_PACK_FILE_CONTENT_RQ       (_DEF_PROTOCOL_BASE + 10 )
+//文件内容回复
+#define _DEF_PACK_FILE_CONTENT_RS       (_DEF_PROTOCOL_BASE + 11 )
+
+
+//文件下载请求
+struct STRU_DOWNLOAD_RQ
+{
+	STRU_DOWNLOAD_RQ() : type(_DEF_PACK_FILE_DOWNLOAD_RQ)
+		, userid(0), fileid(0) {
+
+	}
+	PackType type;
+	int userid;
+	int fileid;
+};
+//文件下载回复
+struct STRU_DOWNLOAD_RS
+{
+	STRU_DOWNLOAD_RS() : type(_DEF_PACK_FILE_DOWNLOAD_RS)
+		, userid(0), fileid(0), result(1) {
+
+	}
+	PackType type;
+	int userid;
+	int fileid;
+	int result;
+};
+//文件头请求
+struct STRU_FILE_HEAD_RQ
+{
+	STRU_FILE_HEAD_RQ() :type(_DEF_PACK_FILE_HEAD_RQ)
+		, fileid(0), size(0) {
+		memset(fileName, 0, sizeof(fileName));
+		memset(dir, 0, sizeof(dir));
+		memset(md5, 0, sizeof(md5));
+		memset(fileType, 0, sizeof(fileType));
+	}
+	PackType type;
+	int fileid;
+	char fileName[_MAX_PATH_SIZE];
+	int size;//大小
+	char dir[_MAX_PATH_SIZE];//路径
+	char md5[_MAX_SIZE];
+	char fileType[_MAX_SIZE];//文件类型
+};
+//文件头回复
+struct STRU_FILE_HEAD_RS
+{
+	STRU_FILE_HEAD_RS() : type(_DEF_PACK_FILE_HEAD_RS)
+		, userid(0), fileid(0), result(1) {
+
+	}
+	PackType type;
+	int userid;
+	int fileid;
+	int result;
+};
+//文件内容请求
+struct STRU_FILE_CONTENT_RQ
+{
+	STRU_FILE_CONTENT_RQ() :type(_DEF_PACK_FILE_CONTENT_RQ),
+		userid(0), fileid(0), len(0) {
+		memset(content, 0, sizeof(content));
+	}
+	PackType type;
+	int userid;//1)userid
+	int fileid;//2)fileid
+	char content[_DEF_BUFFER];//3)文件内容
+	int len;//4)长度
+};
+//文件内容回复
+struct STRU_FILE_CONTENT_RS
+{
+	STRU_FILE_CONTENT_RS() :type(_DEF_PACK_FILE_CONTENT_RS),
+		userid(0), fileid(0), result(1), len(0) {
+
+	}
+	PackType type;
+	int userid;//1)userid
+	int fileid;//2)fileid
+	int result;//3)result
+	int len;//4)长度
+};
+
+//文件信息结构体
+struct FileInfo
+{
+	FileInfo(): fileid(0), filefd(0), pos(0), size(0){
+		
+	}
+	int fileid;
+	std::string name;
+	std::string dir;
+	std::string time;
+	int size;
+	std::string md5;
+	std::string type;
+	std::string absolutePath;
+
+	int pos; //文件下载或上传到什么位置
+
+	int isPause;//暂停	 0、1
+
+	int filefd;//文件描述符
+};
 #endif
 
 
