@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QtWidgets/QMessageBox>
+#include <QProgressBar>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -105,6 +106,44 @@ void MainWindow::slot_insertFileInfo(FileInfo& info)
     ui->table_file->setItem(row, 2, item3);
     //加入行悬停显示信息 显示	int fileid;QString name; QString dir;QString time; int size;QString md5;QString type;
     ui->table_file->item(row, 0)->setToolTip("名称:" + info.name + "\n" + "地址:" + info.dir + "\n" + "时间:" + info.time + "\n" + "大小:" + FileInfo::getSize(info.size) + "\n" + "MD5:" + info.md5 + "\n" + "类型:" + info.type + "\n" + "文件id:"+QString::number(info.fileid));
+}
+
+void MainWindow::slot_insertDownloadFile(FileInfo& info)
+{
+    //新增一行
+    int row = ui->table_download->rowCount();
+    ui->table_download->setRowCount(row + 1);
+    //插入数据
+    QTableWidgetItem* item1 = new QTableWidgetItem(info.name);
+    QTableWidgetItem* item2 = new QTableWidgetItem;
+    QString size = FileInfo::getSize(info.size);
+    QProgressBar* progress = new QProgressBar;
+    progress->setRange(0, info.size);
+    progress->setValue(0);
+    ui->table_download->setItem(row, 0, item1);
+    ui->table_download->setItem(row, 1, item2);
+    ui->table_download->setCellWidget(row, 2, progress);
+    //加入行悬停显示信息 显示	int fileid;QString name; QString dir;QString time; int size;QString md5;QString type;
+    ui->table_download->item(row, 0)->setToolTip("名称:" + info.name + "\n" + "地址:" + info.dir + "\n" + "时间:" + info.time + "\n" + "大小:" + FileInfo::getSize(info.size) + "\n" + "MD5:" + info.md5 + "\n" + "类型:" + info.type + "\n" + "文件id:" + QString::number(info.fileid));
+
+}
+
+void MainWindow::slot_updateFileProgress(int fileid, int pos)
+{
+    //遍历表单 取ToolTip中的fileid 对比 判断是否相等 然后更新第二列的进度条
+    int rows = ui->table_download->rowCount();
+    for (int i = 0; i < rows; i++) {
+        QTableWidgetItem* item = ui->table_download->item(i, 0);
+		QString str = item->toolTip();
+		QStringList list = str.split("\n");
+		QString id = list.at(6);
+		id = id.mid(4);
+        if (id.toInt() == fileid) {
+			QProgressBar* progress = (QProgressBar*)ui->table_download->cellWidget(i, 2);
+			progress->setValue(pos);
+			break;
+		}
+	}
 }
 
 void MainWindow::slot_menuShow(QPoint point)

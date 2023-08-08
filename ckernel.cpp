@@ -39,8 +39,29 @@ Ckernel::Ckernel(QObject* parent)
     connect(m_loginDialog, SIGNAL(SIG_registerCommit(QString,QString,QString)), this, SLOT(slot_registerCommit(QString,QString,QString)));
     connect(m_loginDialog, SIGNAL(SIG_loginCommit(QString,QString)), this, SLOT(slot_loginCommit(QString,QString)));
     connect(m_loginDialog, SIGNAL(SIG_close()), this, SLOT(slot_deleteLater()));
+    connect(this,SIGNAL(SIG_updateFileProgress(int,int)), m_pUI, SLOT(slot_updateFileProgress(int,int)));
+}
+#include<QTextCodec>
+
+// QString -> char* gb2312
+void Utf8ToGB2312(char* gbbuf, int nlen, QString& utf8)
+{
+    //转码的对象
+    QTextCodec* gb2312code = QTextCodec::codecForName("gb2312");
+    //QByteArray char 类型数组的封装类 里面有很多关于转码 和 写IO的操作
+    QByteArray ba = gb2312code->fromUnicode(utf8);// Unicode -> 转码对象的字符集
+
+    strcpy_s(gbbuf, nlen, ba.data());
 }
 
+// char* gb2312 --> QString utf8
+QString GB2312ToUtf8(char* gbbuf)
+{
+    //转码的对象
+    QTextCodec* gb2312code = QTextCodec::codecForName("gb2312");
+    //QByteArray char 类型数组的封装类 里面有很多关于转码 和 写IO的操作
+    return gb2312code->toUnicode(gbbuf);// 转码对象的字符集 -> Unicode
+}
 void Ckernel::setConfig()
 {
     //读取配置文件 windows .ini文件 linux xml文件
@@ -235,13 +256,19 @@ void Ckernel::slot_dealFileHeadRq(unsigned int lSendIP, char* buf, int nlen)
     fileInfo.size = rq->size;
     //绝对路径 默认路径 exe同级
     fileInfo.absolutePath = m_sysPath + fileInfo.dir +  fileInfo.name;
+    //输出绝对路径
+    qDebug() << "绝对路径:" << fileInfo.absolutePath;
+    //转化为ANSI
+    char pathbuf[1024] = "";
+    Utf8ToGB2312(pathbuf, 1000, fileInfo.absolutePath);
     //打开文件
-    fileInfo.pfile = fopen(fileInfo.absolutePath.toStdString().c_str(), "wb");
+    fileInfo.pfile = fopen(pathbuf, "wb");
     if(!fileInfo.pfile)
     {
         qDebug() << "打开文件失败:"<<fileInfo.absolutePath;
         return;
     }
+    m_pUI->slot_insertDownloadFile(fileInfo);
     //加入到map
     m_mapFileidToFileInfo[fileInfo.fileid] = fileInfo;
     //写文件头回复
@@ -264,18 +291,45 @@ void Ckernel::slot_dealFileContentRq(unsigned int lSendIP, char* buf, int nlen)
     FileInfo& info = m_mapFileidToFileInfo[rq->fileid];
     int len = fwrite(rq->content, 1, rq->len, info.pfile);
     //有可能失败
+    // 输出文件内容进行测试
+    qDebug() << "写文件内容:" << rq->content;
+    qDebug() << "写文件长度:" << rq->len;
+    qDebug() << "写文件结果:" << len;
+    //输出失败
+    if (len <= 0) {
+        qDebug() << "写文件失败";
+        return;
+    }
+    //验证文件是否存在
+    if (QFile::exists(info.absolutePath)) {
+		qDebug() << "文件已存在";
+        //输出文件大小和内容
+        qDebug() << "文件大小:" << info.size;
+        qDebug() << "文件内容:" << info.pfile;
+
+	}
+    else {
+		qDebug() << "文件不存在";
+	}
     //写文件内容回复
     STRU_FILE_CONTENT_RS rs;
     if (len != rq->len) {
+        //失败->回退
+        fseek(info.pfile, -1*len, SEEK_CUR);
         rs.result = 0;
     }
     else {
         info.pos += len;
         rs.result = 1;
+        //更新进度条 文件id pos
+        Q_EMIT SIG_updateFileProgress(info.fileid, info.pos);
     }
     rs.len = rq->len;
     rs.fileid = rq->fileid;
     rs.userid = rq->userid;
+    
+    
+
     if (info.pos >= info.size) {
         fclose(info.pfile);
     m_mapFileidToFileInfo.erase(info.fileid);
