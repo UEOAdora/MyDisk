@@ -55,7 +55,7 @@ public:
         return &kernel;
     }
 signals:
-
+    void SIG_updateFileProgress(int fileid, int pos);
 private slots:
 
     //处理控件的信号

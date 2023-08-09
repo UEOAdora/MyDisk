@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory.h>
-#define _DEF_BUFFER  ( 4096 )
+#define _DEF_BUFFER  ( 16384 ) 
 #define _DEF_CONTENT_SIZE	(1024)
 #define _MAX_SIZE	(40)
 

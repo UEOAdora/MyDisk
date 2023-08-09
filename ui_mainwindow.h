@@ -293,7 +293,20 @@ public:
         horizontalLayout_8->setObjectName(QString::fromUtf8("horizontalLayout_8"));
         horizontalLayout_8->setContentsMargins(0, 0, 0, 0);
         table_download = new QTableWidget(tab_download);
+        if (table_download->columnCount() < 3)
+            table_download->setColumnCount(3);
+        QTableWidgetItem *__qtablewidgetitem3 = new QTableWidgetItem();
+        table_download->setHorizontalHeaderItem(0, __qtablewidgetitem3);
+        QTableWidgetItem *__qtablewidgetitem4 = new QTableWidgetItem();
+        table_download->setHorizontalHeaderItem(1, __qtablewidgetitem4);
+        QTableWidgetItem *__qtablewidgetitem5 = new QTableWidgetItem();
+        table_download->setHorizontalHeaderItem(2, __qtablewidgetitem5);
         table_download->setObjectName(QString::fromUtf8("table_download"));
+        table_download->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        table_download->setSelectionBehavior(QAbstractItemView::SelectRows);
+        table_download->horizontalHeader()->setDefaultSectionSize(290);
+        table_download->horizontalHeader()->setStretchLastSection(true);
+        table_download->verticalHeader()->setVisible(false);
 
         horizontalLayout_8->addWidget(table_download);
 
@@ -351,7 +364,7 @@ public:
 
         retranslateUi(MainWindow);
 
-        tabWidget->setCurrentIndex(2);
+        tabWidget->setCurrentIndex(1);
         tw_share->setCurrentIndex(0);
 
 
@@ -379,6 +392,12 @@ public:
         QTableWidgetItem *___qtablewidgetitem2 = table_file->horizontalHeaderItem(2);
         ___qtablewidgetitem2->setText(QApplication::translate("MainWindow", "\345\244\247\345\260\217", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(tab_upload), QApplication::translate("MainWindow", "\344\270\212\344\274\240", nullptr));
+        QTableWidgetItem *___qtablewidgetitem3 = table_download->horizontalHeaderItem(0);
+        ___qtablewidgetitem3->setText(QApplication::translate("MainWindow", "\346\226\207\344\273\266", nullptr));
+        QTableWidgetItem *___qtablewidgetitem4 = table_download->horizontalHeaderItem(1);
+        ___qtablewidgetitem4->setText(QApplication::translate("MainWindow", "\345\244\247\345\260\217", nullptr));
+        QTableWidgetItem *___qtablewidgetitem5 = table_download->horizontalHeaderItem(2);
+        ___qtablewidgetitem5->setText(QApplication::translate("MainWindow", "\350\277\233\345\272\246", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(tab_download), QApplication::translate("MainWindow", "\344\270\213\350\275\275", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(tab_complete), QApplication::translate("MainWindow", "\345\267\262\345\256\214\346\210\220", nullptr));
         tw_share->setTabText(tw_share->indexOf(tab_share), QApplication::translate("MainWindow", "\346\210\221\347\232\204\345\205\261\344\272\253", nullptr));

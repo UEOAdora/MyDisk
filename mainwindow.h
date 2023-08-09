@@ -36,6 +36,10 @@ public slots:
     //插入文件信息
     void slot_insertFileInfo(FileInfo & info);
 
+    void slot_insertDownloadFile(FileInfo& info);
+
+    void slot_updateFileProgress(int fileid, int pos);
+
     void slot_menuShow(QPoint point);
 
     void slot_dealMenu(QAction* action);
