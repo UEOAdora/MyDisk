@@ -33,6 +33,12 @@ public:
     void FileHeadRs(sock_fd clientfd, char*szbuf, int nlen);
     //文件内容回复
     void FileContentRs(sock_fd clientfd, char*szbuf, int nlen);
+    //上传文件请求
+    void UploadFileRq(sock_fd clientfd, char*szbuf, int nlen); 
+
+    void FileContentRq(sock_fd clientfd, char*szbuf, int nlen);
+
+    void AddFolderRq(sock_fd clientfd, char*szbuf, int nlen);
     /*******************************************/
 
 private:
