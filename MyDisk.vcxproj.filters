@@ -83,6 +83,9 @@
     <ClCompile Include="mainwindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="md5\md5.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="netapi\net\INet.h">
@@ -112,12 +115,18 @@
     <QtMoc Include="ckernel.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <ClInclude Include="common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <QtMoc Include="logindialog.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="mainwindow.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <ClInclude Include="md5\md5.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="netapi\net\packdef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -195,6 +204,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="C:\Users\Administrator\Documents\MyDisk\MyDisk_resource.rc" />
+    <ResourceCompile Include="C:\Users\Administrator\Documents\MyDisk\MyDisk\MyDisk_resource.rc" />
   </ItemGroup>
 </Project>

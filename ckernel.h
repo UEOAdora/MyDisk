@@ -37,7 +37,7 @@ private:
     PFUN m_netPackMap[_DEF_PROTOCOL_COUNT];
 public:
     map<int, FileInfo> m_mapFileidToFileInfo;//文件id和文件信息的映射表
-
+    map<string, FileInfo> m_mapFileMd5ToFileInfo;//md5和文件信息的映射表
     QString m_sysPath;
 
     //发送函数
@@ -56,12 +56,13 @@ public:
     }
 signals:
     void SIG_updateFileProgress(int fileid, int pos);
+    void SIG_updateUploadFileProgress(int fileid, int pos);
 private slots:
 
     //处理控件的信号
     void slot_loginCommit(QString, QString);
     void slot_registerCommit(QString, QString, QString);
-
+    
     //回收用槽函数
     void slot_deleteLater();
     //网络处理
@@ -78,6 +79,14 @@ private slots:
     void slot_dealFileHeadRq(unsigned int lSendIP, char* buf, int nlen);
     //处理文件内容请求
     void slot_dealFileContentRq(unsigned int lSendIP, char* buf, int nlen);
+    void slot_uploadFile(QString path);//上传文件信号
+    void slot_uploadFolder(QString path);//上传文件夹信号
+    void slot_dealFileContentRs(unsigned int lSendIP, char* buf, int nlen);
+    
+    void slot_dealUploadFileRs(unsigned int lSendIP, char* buf, int nlen);
+    void slot_uploadFileList();
+    void slot_addFolder(QString name);
+    void slot_dealAddFolderRs(unsigned int lSendIP, char* buf, int nlen);
 };
 
 #endif // CKERNEL_H

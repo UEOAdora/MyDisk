@@ -6,7 +6,6 @@
 #include <QMessageBox>
 #include "TcpClientMediator.h"
 #include "TcpServerMediator.h"
-
 #include <QDir>
 using namespace std;
 
@@ -40,6 +39,11 @@ Ckernel::Ckernel(QObject* parent)
     connect(m_loginDialog, SIGNAL(SIG_loginCommit(QString,QString)), this, SLOT(slot_loginCommit(QString,QString)));
     connect(m_loginDialog, SIGNAL(SIG_close()), this, SLOT(slot_deleteLater()));
     connect(this,SIGNAL(SIG_updateFileProgress(int,int)), m_pUI, SLOT(slot_updateFileProgress(int,int)));
+    connect(m_pUI, SIGNAL(SIG_uploadFile(QString)), this, SLOT(slot_uploadFile(QString)));
+    connect(m_pUI, SIGNAL(SIG_uploadFolder(QString)), this, SLOT(slot_uploadFolder(QString)));
+    //更新文件上传进度
+    connect(this, SIGNAL(SIG_updateUploadFileProgress(int, int)), m_pUI, SLOT(slot_updateUploadFileProgress(int, int)));
+    connect(m_pUI, SIGNAL(SIG_addFolder(QString)),this,SLOT(slot_addFolder(QString)));
 }
 #include<QTextCodec>
 
@@ -123,6 +127,10 @@ void Ckernel::setNetMap()
     NetMap( _DEF_PACK_FILE_INFO ) = &Ckernel::slot_dealFileInfo;
     NetMap( _DEF_PACK_FILE_HEAD_RQ) =  &Ckernel::slot_dealFileHeadRq;
     NetMap( _DEF_PACK_FILE_CONTENT_RQ) = &Ckernel::slot_dealFileContentRq;
+    NetMap( _DEF_PACK_FILE_CONTENT_RS) = &Ckernel::slot_dealFileContentRs;
+    //上传回复
+    NetMap( _DEF_PACK_UPLOAD_FILE_RS) = &Ckernel::slot_dealUploadFileRs;
+    NetMap( _DEF_PACK_ADD_FOLDER_RS) = &Ckernel::slot_dealAddFolderRs;
 }
 
 void Ckernel::SendData(char* buf, int nlen)
@@ -174,14 +182,15 @@ void Ckernel::slot_dealLoginRs(unsigned int lSendIP, char* buf, int nlen)
         m_name = rs->name;
 
         m_pUI->slot_setInfo(m_name);
+        m_curDir = "/";
 
         //追加请求 获取用户根目录'/'下面的所有文件
-        STRU_FILE_LIST_RQ rq;
-        rq.userid = m_id;
-        strcpy(rq.dir, "/");
-
-        SendData((char*)&rq, sizeof(rq));
-
+        //STRU_FILE_LIST_RQ rq;
+        //rq.userid = m_id;
+        //strcpy(rq.dir, "/");
+        //
+        //SendData((char*)&rq, sizeof(rq));
+        slot_uploadFileList();
         break;
     }
 }
@@ -291,26 +300,18 @@ void Ckernel::slot_dealFileContentRq(unsigned int lSendIP, char* buf, int nlen)
     FileInfo& info = m_mapFileidToFileInfo[rq->fileid];
     int len = fwrite(rq->content, 1, rq->len, info.pfile);
     //有可能失败
-    // 输出文件内容进行测试
-    qDebug() << "写文件内容:" << rq->content;
-    qDebug() << "写文件长度:" << rq->len;
-    qDebug() << "写文件结果:" << len;
-    //输出失败
-    if (len <= 0) {
-        qDebug() << "写文件失败";
-        return;
-    }
-    //验证文件是否存在
-    if (QFile::exists(info.absolutePath)) {
-		qDebug() << "文件已存在";
-        //输出文件大小和内容
-        qDebug() << "文件大小:" << info.size;
-        qDebug() << "文件内容:" << info.pfile;
 
-	}
-    else {
-		qDebug() << "文件不存在";
-	}
+ //   //验证文件是否存在
+ //   if (QFile::exists(info.absolutePath)) {
+	//	qDebug() << "文件已存在";
+ //       //输出文件大小和内容
+ //       qDebug() << "文件大小:" << info.size;
+ //       qDebug() << "文件内容:" << info.pfile;
+
+	//}
+ //   else {
+	//	qDebug() << "文件不存在";
+	//}
     //写文件内容回复
     STRU_FILE_CONTENT_RS rs;
     if (len != rq->len) {
@@ -322,7 +323,7 @@ void Ckernel::slot_dealFileContentRq(unsigned int lSendIP, char* buf, int nlen)
         info.pos += len;
         rs.result = 1;
         //更新进度条 文件id pos
-        Q_EMIT SIG_updateFileProgress(info.fileid, info.pos);
+        Q_EMIT SIG_updateUploadFileProgress(info.fileid, info.pos);
     }
     rs.len = rq->len;
     rs.fileid = rq->fileid;
@@ -330,12 +331,186 @@ void Ckernel::slot_dealFileContentRq(unsigned int lSendIP, char* buf, int nlen)
     
     
 
-    if (info.pos >= info.size) {
+    if (info.pos >= info.size) { //文件接收完毕
+        //对文件进行md5校验
+
         fclose(info.pfile);
-    m_mapFileidToFileInfo.erase(info.fileid);
+        m_pUI->slot_insertComplete(info);
+        m_mapFileidToFileInfo.erase(info.fileid);
     }
     SendData((char*)&rs, sizeof(rs));
 }
+
+//获取文件md5
+string getFileMD5(QString path) {
+    //打开文件 将文件读取到md5对象中
+    FILE* pfile = nullptr;
+    //utf-8->ascii
+    char buf[1024] = "";
+    Utf8ToGB2312(buf, 1000, path);
+    pfile = fopen(buf, "rb");
+    if (!pfile) {
+		qDebug() << "打开文件失败";
+		return "";
+	}
+    int len = 0;
+    MD5 md;
+    do {
+        len = fread(buf, 1, 1024, pfile);
+        md.update(buf, len);
+    } while (len > 0);
+    //输出md5
+    qDebug() << "文件md5:" << md.toString().c_str();
+    return md.toString();
+}
+#include <QFileInfo>
+#include <QDateTime>
+void Ckernel::slot_uploadFile(QString path)
+{
+    //创建文件信息结构体
+    QFileInfo fileInfo(path);
+    FileInfo info;
+    info.absolutePath = path;
+    info.dir = m_curDir;
+
+    info.md5 = QString::fromStdString(getFileMD5(path));
+    info.name = fileInfo.fileName();
+    info.pfile;
+    info.size = fileInfo.size();
+    info.time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+    info.type = "file";
+    //打开文件
+    char pathbuf[1024] = "";
+    Utf8ToGB2312(pathbuf, 1000, path);
+    info.pfile = fopen(pathbuf, "rb");
+    //求解文件MD5
+
+    //添加map 里面map[md5] = fileInfo
+    m_mapFileMd5ToFileInfo[info.md5.toStdString()] = info;
+    //上传文件 打包
+    STRU_UPLOAD_FILE_RQ rq;
+    std::string strPath = info.dir.toStdString();
+    strcpy(rq.dir, strPath.c_str());
+    std::string strName = info.name.toStdString();
+    strcpy(rq.fileName, strName.c_str());
+    strcpy(rq.fileType, "file");
+    strcpy(rq.md5, info.md5.toStdString().c_str());
+    rq.size = info.size;
+    strcpy(rq.time, info.time.toStdString().c_str());
+    rq.userid = m_id;
+
+    //发送
+    SendData((char*)&rq, sizeof(rq));
+
+}
+
+void Ckernel::slot_uploadFolder(QString path)
+{
+}
+
+void Ckernel::slot_dealFileContentRs(unsigned int lSendIP, char* buf, int nlen)
+{
+    //拆包 获取信息
+    STRU_FILE_CONTENT_RS* rs = (STRU_FILE_CONTENT_RS*)buf;
+    if (m_mapFileidToFileInfo.count(rs->fileid) == 0) {
+        return;
+    }
+    FileInfo& info = m_mapFileidToFileInfo[rs->fileid];
+    //更新进度
+    
+    if (rs->result == 0) {
+        //失败
+		fseek(info.pfile, -1 * rs->len, SEEK_CUR);
+    }
+    else {
+        info.pos += rs->len;
+        Q_EMIT SIG_updateUploadFileProgress(info.fileid, info.pos);
+        if (info.pos >= info.size) {
+            if (info.dir == m_curDir) {
+                slot_uploadFileList();
+            }
+            fclose(info.pfile);
+
+            m_pUI->slot_insertUploadComplete(info);
+			m_mapFileidToFileInfo.erase(rs->fileid);
+            return ;
+        }
+	}
+
+    STRU_FILE_CONTENT_RQ rq;
+    //读文件
+    int len = fread(rq.content, 1, _DEF_BUFFER, info.pfile);
+    rq.len = len;
+    rq.fileid = rs->fileid;
+    rq.userid = rs->userid;
+    //发送文件内容
+    SendData((char*)&rq, sizeof(rq));
+
+
+
+}
+
+void Ckernel::slot_dealUploadFileRs(unsigned int lSendIP, char* buf, int nlen)
+{
+    //拆包 获取信息
+    STRU_UPLOAD_FILE_RS* rs = (STRU_UPLOAD_FILE_RS*)buf;
+    //map md5 -》 id map
+    if (m_mapFileMd5ToFileInfo.count(rs->md5) == 0) {
+		return;
+	}
+    FileInfo& info = m_mapFileMd5ToFileInfo[rs->md5];
+    m_mapFileidToFileInfo[rs->fileid] = info;//拿文件信息
+
+    m_pUI->slot_insertUploadFile(info);
+    
+    STRU_FILE_CONTENT_RQ rq;
+    //读文件
+    int len = fread(rq.content, 1, _DEF_BUFFER, info.pfile);
+    rq.len = len;
+    rq.fileid = rs->fileid;
+    rq.userid = rs->userid;
+    //发送文件内容
+    SendData((char*)&rq, sizeof(rq));
+    //从md5 map 删除 该点
+	m_mapFileMd5ToFileInfo.erase(rs->md5);
+}
+
+void Ckernel::slot_uploadFileList()
+{
+    m_pUI->slot_deleteAllFileInfo();
+    STRU_FILE_LIST_RQ rq;
+    rq.userid = m_id;
+    
+    std::string curDir = m_curDir.toStdString();
+    strcpy(rq.dir, curDir.c_str());
+    SendData((char*)&rq, sizeof(rq));
+}
+
+void Ckernel::slot_addFolder(QString name)
+{
+    STRU_ADD_FOLDER_RQ rq;
+    std::string strPath = m_curDir.toStdString();
+    strcpy(rq.dir, strPath.c_str());
+    std::string strName = name.toStdString();
+    strcpy(rq.fileName, strName.c_str());
+    QString time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+    rq.size = 0;
+    strcpy(rq.time, time.toStdString().c_str());
+    rq.userid = m_id;
+    strcpy(rq.fileType, "dir");
+    //发送
+    SendData((char*)&rq, sizeof(rq));
+}
+
+void Ckernel::slot_dealAddFolderRs(unsigned int lSendIP, char* buf, int nlen)
+{
+    STRU_ADD_FOLDER_RS* rs = (STRU_ADD_FOLDER_RS*)buf;
+    if (rs->result == 1) {
+		slot_uploadFileList();
+	}
+}
+
+
 
 //void Ckernel::slot_serverReadyData(unsigned int lSendIP, char* buf, int nlen)
 //{

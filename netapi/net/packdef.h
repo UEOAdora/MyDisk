@@ -226,7 +226,72 @@ struct STRU_FILE_CONTENT_RS
     int len;//4)长度
 };
 
+//上传文件请求
+#define _DEF_PACK_UPLOAD_FILE_RQ       (_DEF_PROTOCOL_BASE + 12 )
+//上传文件回复
+#define _DEF_PACK_UPLOAD_FILE_RS       (_DEF_PROTOCOL_BASE + 13 )
 
+//上传文件请求
+struct STRU_UPLOAD_FILE_RQ
+{
+    STRU_UPLOAD_FILE_RQ() :type(_DEF_PACK_UPLOAD_FILE_RQ)
+        , userid(0), size(0) {
+        memset(fileName, 0, sizeof(fileName));
+        memset(dir, 0, sizeof(dir));
+        memset(md5, 0, sizeof(md5));
+        memset(fileType, 0, sizeof(fileType));
+        memset(time, 0, sizeof(time));
+    }
+    PackType type;
+    int userid;
+    char fileName[_MAX_PATH_SIZE];
+    int size;//大小
+    char dir[_MAX_PATH_SIZE];//路径
+    char md5[_MAX_SIZE];
+    char fileType[_MAX_SIZE];//文件类型
+    char time[_MAX_SIZE];//上传时间
+};
+//上传文件回复
+struct STRU_UPLOAD_FILE_RS
+{
+    STRU_UPLOAD_FILE_RS() : type(_DEF_PACK_UPLOAD_FILE_RS)
+        , userid(0), fileid(0), result(1) {
+        memset(md5, 0, sizeof(md5));
+    }
+    PackType type;
+    int userid;
+    int fileid;
+    int result;
+    char md5[_MAX_SIZE];
+};
 
-
-
+//新建文件夹
+#define _DEF_PACK_ADD_FOLDER_RQ       (_DEF_PROTOCOL_BASE + 14 )
+#define _DEF_PACK_ADD_FOLDER_RS       (_DEF_PROTOCOL_BASE + 15 )
+struct STRU_ADD_FOLDER_RQ
+{
+    STRU_ADD_FOLDER_RQ() :type(_DEF_PACK_ADD_FOLDER_RQ)
+        , userid(0),size(0),fileType("dir") {
+        memset(fileName, 0, sizeof(fileName));
+        memset(dir, 0, sizeof(dir));
+        memset(md5, 0, sizeof(md5));
+        memset(fileType, 0, sizeof(fileType));
+        memset(time, 0, sizeof(time));
+	}
+    PackType type;
+    int userid;
+    char fileName[_MAX_PATH_SIZE];
+    int size;//大小
+    char dir[_MAX_PATH_SIZE];//路径
+    char md5[_MAX_SIZE];
+    char fileType[_MAX_SIZE];//文件类型
+    char time[_MAX_SIZE];//上传时间
+};
+struct STRU_ADD_FOLDER_RS
+{
+    STRU_ADD_FOLDER_RS() : type(_DEF_PACK_ADD_FOLDER_RS)
+        ,result(1) {
+	}
+	PackType type;
+	int result;
+};

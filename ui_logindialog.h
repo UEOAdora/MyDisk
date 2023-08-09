@@ -155,8 +155,9 @@ public:
         LoginDialog->setWindowTitle(QApplication::translate("LoginDialog", "Dialog", nullptr));
         lb_icon->setText(QString());
         lb_zh->setText(QApplication::translate("LoginDialog", "\350\264\246\345\217\267", nullptr));
-        le_zh->setText(QString());
+        le_zh->setText(QApplication::translate("LoginDialog", "13351075356", nullptr));
         lb_passwd->setText(QApplication::translate("LoginDialog", "\345\257\206\347\240\201", nullptr));
+        le_passwd->setText(QApplication::translate("LoginDialog", "1234", nullptr));
         pb_clear->setText(QApplication::translate("LoginDialog", "\346\270\205\347\251\272", nullptr));
         pb_commit->setText(QApplication::translate("LoginDialog", "\346\217\220\344\272\244", nullptr));
         tw_login_register->setTabText(tw_login_register->indexOf(tab_login), QApplication::translate("LoginDialog", "\347\231\273\345\275\225", nullptr));
